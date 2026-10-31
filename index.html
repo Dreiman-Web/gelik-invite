@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Приглашение «Гелик и Ко»</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #05080f;
+            --card-bg: rgba(25, 35, 55, 0.65);
+            --text-main: #ffffff;
+            --text-muted: #9ca3af;
+            --accent: #637b9e;
+            --border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body, html {
+            height: 100%;
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            overflow: hidden;
+        }
+
+        .app-container {
+            position: relative;
+            width: 100%;
+            max-width: 480px;
+            height: 100%;
+            margin: 0 auto;
+            background-image: linear-gradient(rgba(5, 8, 15, 0.5), rgba(5, 8, 15, 0.95)), url('./img/фон.jpg');
+            background-size: cover;
+            background-position: center;
+            overflow-y: auto;
+            overflow-x: hidden;
+            box-shadow: 0 0 40px rgba(0,0,0,0.8);
+        }
+
+        .app-container::-webkit-scrollbar { width: 0px; }
+
+        .screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            padding: 30px 24px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+            overflow-y: auto;
+        }
+
+        .screen.active {
+            opacity: 1;
+            visibility: visible;
+            z-index: 10;
+        }
+
+        /* Кнопка Назад */
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 13px;
+            margin-bottom: 40px;
+            cursor: pointer;
+            transition: color 0.3s;
+            align-self: flex-start;
+        }
+        .back-btn:hover { color: var(--text-main); }
+        .back-btn svg { margin-right: 8px; width: 16px; height: 16px; fill: currentColor; }
+
+        /* --- ЭКРАН 1: КОНВЕРТ --- */
+        #screen-envelope { justify-content: center; align-items: center; background-color: transparent; }
+        
+        .envelope {
+            width: 260px;
+            height: 170px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            position: relative;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s;
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+        }
+        
+        .envelope::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 85px;
+            background: rgba(255,255,255,0.05);
+            clip-path: polygon(0 0, 100% 0, 50% 100%);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .envelope:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6), 0 0 20px rgba(255,255,255,0.1);
+        }
+
+        .envelope h1 {
+            font-size: 18px;
+            letter-spacing: 1.5px;
+            z-index: 2;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .envelope p {
+            font-size: 11px;
+            color: var(--text-muted);
+            z-index: 2;
+        }
+
+        .cursor-icon {
+            position: absolute;
+            bottom: 10px; right: 10px;
+            width: 24px; height: 24px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M7 2l12 11.2-5.8.5 3.3 7.3-2.2 1-3.2-7.4-4.4 4.3z"/></svg>') no-repeat center;
+            background-size: contain;
+            transform: rotate(-15deg);
+            animation: clickAnim 2s infinite;
+        }
+
+        @keyframes clickAnim {
+            0%, 100% { transform: rotate(-15deg) scale(1); }
+            50% { transform: rotate(-15deg) scale(0.9); }
+        }
+
+        /* --- ЭКРАН 2: ВЫБОР --- */
+        #screen-choice { justify-content: center; }
+        
+        .choice-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: background 0.3s, transform 0.3s;
+        }
+        .choice-btn:hover {
+            background: rgba(40, 55, 80, 0.9);
+            transform: scale(1.02);
+        }
+        .choice-btn span { font-size: 16px; font-weight: 500; }
+        .choice-btn svg { width: 20px; height: 20px; fill: var(--text-muted); }
+
+        /* --- ОБЩИЕ ЭЛЕМЕНТЫ --- */
+        .header-text { text-align: center; margin-bottom: 35px; }
+        .header-text h2 { font-size: 24px; margin-bottom: 12px; letter-spacing: -0.5px;}
+        .header-text p { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 28px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            margin-bottom: 35px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .card h3 { font-size: 17px; margin-bottom: 20px; text-align: center; }
+        .card p { font-size: 13.5px; line-height: 1.7; color: #d1d5db; margin-bottom: 16px; }
+        .card p:last-child { margin-bottom: 0; }
+
+        .quote {
+            border-left: 3px solid var(--accent);
+            padding-left: 15px;
+            margin-top: 25px;
+            font-style: italic;
+            font-size: 13px;
+            color: var(--text-main);
+            background: linear-gradient(90deg, rgba(99,123,158,0.1), transparent);
+            padding: 10px 15px;
+            border-radius: 0 8px 8px 0;
+        }
+
+        /* Списки с линиями */
+        .list-block { 
+            display: flex; 
+            flex-direction: column; 
+            margin-bottom: 35px; 
+            position: relative;
+        }
+        
+        .list-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            position: relative;
+            padding-bottom: 28px;
+            transition: transform 0.3s ease;
+        }
+        .list-item:hover {
+            transform: translateX(4px);
+        }
+        
+        .list-item:last-child {
+            padding-bottom: 0;
+        }
+
+        /* Вертикальная линия между кружочками */
+        .list-item:not(:last-child)::before {
+            content: '';
+            position: absolute;
+            left: 11px;
+            top: 28px;
+            bottom: 0;
+            width: 1px;
+            background: var(--border-color);
+            z-index: 1;
+        }
+        
+        .list-icon {
+            flex-shrink: 0;
+            width: 24px; height: 24px;
+            border-radius: 50%;
+            border: 1px solid var(--text-muted);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 2px;
+            background: var(--bg-color);
+            position: relative;
+            z-index: 2;
+            transition: all 0.3s;
+        }
+
+        .list-item:hover .list-icon {
+            border-color: var(--accent);
+            box-shadow: 0 0 10px rgba(99,123,158,0.5);
+        }
+        
+        .list-icon::after {
+            content: '';
+            width: 6px; height: 6px;
+            background: var(--text-muted);
+            border-radius: 50%;
+            transition: background 0.3s;
+        }
+        .list-item:hover .list-icon::after { background: var(--accent); }
+
+        .list-content { flex: 1; }
+        .list-content h4 { font-size: 15px; font-weight: 600; margin-bottom: 6px; letter-spacing: -0.2px; }
+        .list-content p { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+
+        /* Кнопка */
+        .main-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--accent);
+            color: var(--text-main);
+            padding: 14px 45px;
+            border-radius: 30px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            margin: 10px auto 30px;
+            display: block;
+            transition: all 0.3s;
+            backdrop-filter: blur(5px);
+        }
+        .main-btn:hover {
+            background: var(--accent);
+            color: #fff;
+            box-shadow: 0 0 20px rgba(99,123,158,0.4);
+            transform: translateY(-2px);
+        }
+
+        .footer-note {
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: auto;
+            padding-top: 20px;
+            padding-bottom: 15px;
+            opacity: 0.7;
+        }
+
+        /* --- TOAST УВЕДОМЛЕНИЕ --- */
+        .toast {
+            position: fixed;
+            top: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(30, 45, 70, 0.95);
+            border: 1px solid var(--accent);
+            color: #fff;
+            padding: 18px 30px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+            transition: top 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            width: 90%;
+            max-width: 350px;
+        }
+
+        .toast.show { top: 20px; }
+        .toast p { margin-bottom: 5px; font-size: 15px; font-weight: 600; }
+        .toast span { font-size: 12px; color: var(--text-muted); }
+
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+
+        <!-- ЭКРАН 1: Конверт -->
+        <div class="screen active" id="screen-envelope">
+            <div class="envelope" onclick="nextScreen('screen-choice')">
+                <h1>«Гелик и Ко»</h1>
+                <p>Нажмите, чтобы открыть</p>
+                <div class="cursor-icon"></div>
+            </div>
+        </div>
+
+        <!-- ЭКРАН 2: Выбор -->
+        <div class="screen" id="screen-choice">
+            <div class="choice-btn" onclick="nextScreen('val-1')">
+                <span>Для Вали</span>
+                <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+            </div>
+            <div class="choice-btn" onclick="nextScreen('serg-1')">
+                <span>Для Сергея</span>
+                <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+            </div>
+        </div>
+
+        <!-- ВЕТКА ВАЛИ -->
+        <div class="screen" id="val-1">
+            <a class="back-btn" onclick="nextScreen('screen-choice')">
+                <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" fill="none"/></svg> Вернуться на главную
+            </a>
+            <div class="header-text">
+                <h2>Валя, привет!</h2>
+                <p>Служба поддержки компании<br>«Гелик и Ко» на связи</p>
+            </div>
+            <div class="card">
+                <h3>Твоё приглашение</h3>
+                <p>У нас для тебя две новости. Первая: мы сдали на права! Вторая: в нашем распоряжении оказался легендарный Mercedes-Benz G-Class (кузов G463, 1996 года).</p>
+                <p>В связи с этим мы запускаем специальную программу «Первый выезд». Вас ждет раритетная машина, вечерний город и полное ощущение того, что мы это сделали.</p>
+                <p>Просьба откликнуться для согласования даты и времени.</p>
+                <div class="quote">Твой персональный менеджер уже на связи.</div>
+            </div>
+            <button class="main-btn" onclick="nextScreen('val-2')">Дальше</button>
+        </div>
+
+        <div class="screen" id="val-2">
+            <a class="back-btn" onclick="nextScreen('val-1')">
+                <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" fill="none"/></svg> Назад
+            </a>
+            <div class="header-text">
+                <h2>Что вас ждёт?</h2>
+            </div>
+            <div class="list-block">
+                <div class="list-item">
+                    <div class="list-icon"></div>
+                    <div class="list-content">
+                        <h4>Раритетный G-Class</h4>
+                        <p>Тот самый квадратный, брутальный и с историей.</p>
+                    </div>
+                </div>
+                <div class="list-item">
+                    <div class="list-icon"></div>
+                    <div class="list-content">
+                        <h4>Любимая музыка</h4>
+                        <p>Подключаем телефон, включаем колонки и врубаем на полную.</p>
+                    </div>
+                </div>
+                <div class="list-item">
+                    <div class="list-icon"></div>
+                    <div class="list-content">
+                        <h4>Вечерний город</h4>
+                        <p>Катаемся, болтаем, останавливаемся там, где захотим.</p>
+                    </div>
+                </div>
+            </div>
+            <button class="main-btn" onclick="nextScreen('val-3')">Дальше</button>
+        </div>
+
+        <div class="screen" id="val-3">
+            <a class="back-btn" onclick="nextScreen('val-2')">
+                <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" fill="none"/></svg> Назад
+            </a>
+            <div class="header-text">
+                <h2>Чек-лист пассажира</h2>
+                <p>Чтобы наш вечер прошел идеально, предлагаю обсудить детали в личке. Подумай заранее над тремя вещами:</p>
+            </div>
+            <div class="list-block">
+                <div class="list-item">
+                    <div class="list-icon"></div>
+                    <div class="list-content">
+                        <h4>Твои три любимых трека</h4>
+                        <p>Чтобы они точно оказались в плейлисте.</p>
+                    </div>
+                </div>
+                <div class="list-item">
+                    <div class="list-icon"></div>
+                    <div class="list-content">
+                        <h4>Маршрут</h4>
+                        <p>Куда бы ты хотела заехать.</p>
+                    </div>
+                </div>
+                <div class="list-item">
+                    <div class="list-icon"></div>
+                    <div class="list-content">
+                        <h4>Что взять с собой</h4>
+                        <p>Здесь ограничений нет, бери всё, что посчитаешь нужным.</p>
+                    </div>
+                </div>
+            </div>
+            <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 20px; text-align: center;">📍 Точка сбора у каждого индивидуальна. Но, не переживай, G463 заберет и развезет всех по домам в целости и сохранности.</p>
+            <button class="main-btn" onclick="showToast()">Готова</button>
+            <div class="footer-note">Остались вопросы? Вы можете написать нам в чат.</div>
+        </div>
+
+        <!-- ВЕТКА СЕРГЕЯ -->
+        <div class="screen" id="serg-1">
+            <a class="back-btn" onclick="nextScreen('screen-choice')">
+                <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" fill="none"/></svg> Вернуться на главную
+            </a>
+            <div class="header-text">
+                <h2>Сергей, привет!</h2>
+                <p>Служба поддержки компании<br>«Гелик и Ко» на связи</p>
+            </div>
+            <div class="card">
+                <h3>Твоё приглашение</h3>
+                <p>Уважаемый Сергей! Спешим сообщить, что вы официально приглашены на торжественный выезд, посвященный получению водительских удостоверений двумя вашими курсантками.</p>
+                <p>Для вас забронировано VIP-место в Mercedes-Benz G-Class (кузов G463, 1996 года). Обращаем ваше внимание: в целях безопасности и сохранения вашей нервной системы, руль доверен нам.</p>
+                <div class="quote">Пожалуйста, подтвердите свое участие.</div>
+            </div>
+            <button class="main-btn" onclick="nextScreen('serg-2')">Дальше</button>
+        </div>
+
+        <div class="screen" id="serg-2">
+            <a class="back-btn" onclick="nextScreen('serg-1')">
+                <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" fill="none"/></svg> Назад
+            </a>
+            <div class="header-text">
+                <h2>Что вас ждёт?</h2>
+            </div>
+            <div class="list-block">
+                <div class="list-item">
+                    <div class="list-icon"></div>
+                    <div class="list-content">
+                        <h4>VIP-место (на заднем сиденье)</h4>
+                        <p>Полный релакс, пока руль в надежных руках.</p>
+                    </div>
+                </div>
+                <div class="list-item">
+                    <div class="list-icon"></div>
+                    <div class="list-content">
+                        <h4>Остановки на перекур</h4>
+                        <p>Вечерний город, отличная музыка и остановки по требованию.</p>
+                    </div>
+                </div>
+                <div class="list-item">
+                    <div class="list-icon"></div>
+                    <div class="list-content">
+                        <h4>Небольшой подарок в конце</h4>
+                        <p>Не переживайте, не трубочка со сгущёнкой, мы помним, что вы не любите сладкое.</p>
+                    </div>
+                </div>
+            </div>
+            <button class="main-btn" onclick="nextScreen('serg-3')">Дальше</button>
+        </div>
+
+        <div class="screen" id="serg-3">
+            <a class="back-btn" onclick="nextScreen('serg-2')">
+                <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" fill="none"/></svg> Назад
+            </a>
+            <div class="header-text">
+                <h2>Чек-лист пассажира</h2>
+                <p>Чтобы наш вечер прошел идеально, предлагаю обсудить детали в личке. Подумай заранее над тремя вещами:</p>
+            </div>
+            <div class="list-block">
+                <div class="list-item">
+                    <div class="list-icon"></div>
+                    <div class="list-content">
+                        <h4>Твои три любимых трека</h4>
+                        <p>Чтобы они точно оказались в плейлисте.</p>
+                    </div>
+                </div>
+                <div class="list-item">
+                    <div class="list-icon"></div>
+                    <div class="list-content">
+                        <h4>Маршрут</h4>
+                        <p>Куда бы ты хотел заехать.</p>
+                    </div>
+                </div>
+                <div class="list-item">
+                    <div class="list-icon"></div>
+                    <div class="list-content">
+                        <h4>Что взять с собой</h4>
+                        <p>Здесь ограничений нет, бери всё, что посчитаешь нужным (хоть свой ящик пива)</p>
+                    </div>
+                </div>
+            </div>
+            <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 20px; text-align: center;">📍 Точка сбора у каждого индивидуальна. Но, не переживай, G463 заберет и развезет каждого пассажира по домам в целости и сохранности.</p>
+            <button class="main-btn" onclick="showToast()">В деле</button>
+            <div class="footer-note">Остались вопросы? Вы можете написать нам в чат.</div>
+        </div>
+
+    </div>
+
+    <!-- Всплывающее уведомление (Toast) -->
+    <div class="toast" id="toast">
+        <p>Всего наилучшего!</p>
+        <span>Компания «Гелик и Ко»</span>
+    </div>
+
+    <script>
+        // Логика переключения экранов
+        function nextScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            
+            const targetScreen = document.getElementById(screenId);
+            if (targetScreen) {
+                targetScreen.classList.add('active');
+                targetScreen.scrollTop = 0;
+            }
+        }
+
+        // Логика всплывающего окна и перехода в ВК
+        function showToast() {
+            const toast = document.getElementById('toast');
+            toast.classList.add('show');
+
+            setTimeout(() => {
+                window.open('https://vk.com/drejm800', '_blank');
+            }, 500);
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 4000);
+        }
+    </script>
+</body>
+</html>
